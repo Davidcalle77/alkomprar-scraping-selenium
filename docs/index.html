@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alkomprar Scraping con Selenium</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 40px auto; padding: 0 16px; }
+    table { border-collapse: collapse; width: 100%; }
+    td, th { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>Alkomprar Scraping con Selenium</h1>
+  <p>Extrae el precio, el descuento y las calificaciones del Samsung Galaxy A27
+     en Alkomprar. Las pruebas y el despliegue son automáticos con GitHub Actions.</p>
+  <h2>Último dato extraído</h2>
+  <div id="resultado">Cargando…</div>
+  <p><a href="https://github.com/Davidcalle77/alkomprar-scraping-selenium">Ver el repositorio</a></p>
+
+  <script>
+    const fmt = n => (n == null ? "—" : "$" + Number(n).toLocaleString("es-CO"));
+    fetch("datos.json")
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(d => {
+        const desc = d.precio_anterior && d.precio_actual
+          ? Math.round((1 - d.precio_actual / d.precio_anterior) * 100) + " %" : "—";
+        const filas = [
+          ["Producto", d.nombre ?? "—"],
+          ["Precio actual", fmt(d.precio_actual)],
+          ["Precio anterior", fmt(d.precio_anterior)],
+          ["Descuento", desc],
+          ["Calificación", d.calificacion ?? "—"],
+          ["Opiniones", d.opiniones ?? "—"],
+          ["Consultado (UTC)", d.fecha_consulta ?? "—"],
+        ];
+        const tabla = document.createElement("table");
+        for (const [k, v] of filas) {
+          const tr = tabla.insertRow();
+          tr.insertCell().textContent = k;
+          tr.insertCell().textContent = v;
+        }
+        document.getElementById("resultado").replaceChildren(tabla);
+      })
+      .catch(() => {
+        document.getElementById("resultado").textContent = "Aún no hay datos disponibles.";
+      });
+  </script>
+</body>
+</html>
